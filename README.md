@@ -476,6 +476,84 @@ At this stage, the Git commit history looks like this
 ```
 
 
+## Final
+
+Let's add one last feature and then do another prod release to demonstrate how
+the merge process plays out with "fast-forward" merges.
+
+```
+git checkout -b feature/5 develop
+echo "Feature 5" >> CHANGELOG.md
+git add CHANGELOG.md
+git commit -m"Feature 5"
+git checkout develop
+git merge --no-ff feature/5 -m"Feature 5 (#12)"
+git branch -d feature/5
+```
+
+Note that this would be the 12th pull request, as the previous release to test
+would count as a pull request even though it didn't create a merge commit. We
+will now create a release from test into production.
+
+```
+git checkout prod
+git merge --ff-only test
+```
+
+At this stage, the Git commit history looks like this
+
+```
+*   ####### (develop) Feature 5 (#12)
+|\
+| * ####### Feature 5
+|/
+*   ####### (HEAD -> prod, test) Feature 4 (#10)
+|\
+| * ####### Feature 4
+|/
+*   ####### Continue switch to fast-forward merges (#9)
+|\
+| *   ####### Begin switch to fast-forward merges (#8)
+| |\
+| | *   ####### Release Feature 2 to prod (#7)
+| | |\
+| | |/
+| |/|
+* | |   ####### Feature 3 (#5)
+|\ \ \
+| | * \   ####### Release Feature 2 to test (#6)
+| | |\ \
+| |_|/ /
+|/| | |
+| * | | ####### Feature 3
+|/ / /
+| | *   ####### Release Feature 1 to prod (#4)
+| | |\
+| | |/
+| |/|
+* | |   ####### Feature 2 (#3)
+|\ \ \
+| * | | ####### Feature 2
+|/ / /
+| * |   ####### Release Feature 1 to test (#2)
+| |\ \
+| |/ /
+|/| /
+| |/
+* |   ####### Feature 1 (#1)
+|\ \
+| |/
+|/|
+| * ####### Feature 1
+|/
+* ####### Initial commit
+```
+
+We'll call an end to our experiment here. You can see that from this point
+forwards, the Git commit history will follow this tight pattern, which is a lot
+cleaner than the spaghetti that was our "merge-commit" process.
+
+
 [1]: https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-request-merges
 [2]: https://docs.microsoft.com/en-au/azure/devops/repos/git/pull-requests?view=azure-devops#complete-the-pull-request
 [3]: https://bitbucket.org/blog/fast-forward-merges-bitbucket-cloud-default-like
