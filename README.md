@@ -337,6 +337,145 @@ This is becoming a nightmare now, and we've only done 3 features and 2
 releases.
 
 
+## Begin Switch to "Fast-forward" Merges
+
+This is where we start the process of switching to using "fast-forward" merges
+when releasing changes to `test` or `prod`. Because all of the merges up until
+now have invovled creating a merge commit, our `prod` branch has commits which
+are not in `test` and `test` has commits which are not in `develop`, which
+would prevent us from using "fast-forward" merges currently. As such, the first
+step is to merge our branches _down_ towards `develop` to ensure each lower
+branch is strictly ahead of the higher branches.
+
+```
+git checkout test
+git merge --no-ff prod -m'Begin switch to "fast-forward" merges (#8)'
+```
+
+Now that we have `test` strictly ahead of `prod`, the next step is to get
+`develop` strictly ahead of `test` (and therefore `prod` as well). We do this
+by again merging `test` _down_ into `develop`. Note that we have Feature 3
+still in `develop` and not yet in `test`, but this doesn't affect us at all.
+
+```
+git checkout develop
+git merge --no-ff test -m'Continue switch to "fast-forward" merges (#9)'
+```
+
+At this stage, the Git commit history looks like this
+
+```
+*   ####### (HEAD -> develop) Continue switch to fast-forward merges (#9)
+|\
+| *   ####### (test) Begin switch to fast-forward merges (#8)
+| |\
+| | *   ####### (prod) Release Feature 2 to prod (#7)
+| | |\
+| | |/
+| |/|
+* | |   ####### Feature 3 (#5)
+|\ \ \
+| | * \   ####### Release Feature 2 to test (#6)
+| | |\ \
+| |_|/ /
+|/| | |
+| * | | ####### Feature 3
+|/ / /
+| | *   ####### Release Feature 1 to prod (#4)
+| | |\
+| | |/
+| |/|
+* | |   ####### Feature 2 (#3)
+|\ \ \
+| * | | ####### Feature 2
+|/ / /
+| * |   ####### Release Feature 1 to test (#2)
+| |\ \
+| |/ /
+|/| /   
+| |/
+* |   ####### Feature 1 (#1)
+|\ \
+| |/
+|/|
+| * ####### Feature 1
+|/
+* ####### Initial commit
+```
+
+We now have all our ducks in a row, so to speak, and things will start to get a
+lot smoother from here.
+
+
+## Continuing Feature Development
+
+Let's add our first feature after switching to "fast-forward" merges for
+releases to higher environments, though remember that we are still using
+"merge-commit" merges for feature branches.
+
+```
+git checkout -b feature/4 develop
+echo "Feature 4" >> CHANGELOG.md
+git add CHANGELOG.md
+git commit -m"Feature 4"
+git checkout develop
+git merge --no-ff feature/4 -m"Feature 4 (#10)"
+git branch -d feature/4
+```
+
+Let's take the opportunity to release straight to the test environment as well.
+
+```
+git checkout test
+git merge --ff-only develop
+```
+
+At this stage, the Git commit history looks like this
+
+```
+*   ####### (HEAD -> test, develop) Feature 4 (#10)
+|\
+| * ####### Feature 4
+|/
+*   ####### Continue switch to fast-forward merges (#9)
+|\
+| *   ####### Begin switch to fast-forward merges (#8)
+| |\
+| | *   ####### (prod) Release Feature 2 to prod (#7)
+| | |\
+| | |/
+| |/|
+* | |   ####### Feature 3 (#5)
+|\ \ \
+| | * \   ####### Release Feature 2 to test (#6)
+| | |\ \
+| |_|/ /
+|/| | |
+| * | | ####### Feature 3
+|/ / /
+| | *   ####### Release Feature 1 to prod (#4)
+| | |\
+| | |/
+| |/|
+* | |   ####### Feature 2 (#3)
+|\ \ \
+| * | | ####### Feature 2
+|/ / /
+| * |   ####### Release Feature 1 to test (#2)
+| |\ \
+| |/ /
+|/| /
+| |/
+* |   ####### Feature 1 (#1)
+|\ \
+| |/
+|/|
+| * ####### Feature 1
+|/
+* ####### Initial commit
+```
+
+
 [1]: https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-request-merges
 [2]: https://docs.microsoft.com/en-au/azure/devops/repos/git/pull-requests?view=azure-devops#complete-the-pull-request
 [3]: https://bitbucket.org/blog/fast-forward-merges-bitbucket-cloud-default-like
