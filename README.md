@@ -187,6 +187,69 @@ At this stage, the Git commit history looks like this
 ```
 
 
+## Releasing to Test
+
+For now, we will use the "merge commit" strategy to release new features into
+the test environment.
+
+```
+git checkout test
+git merge --no-ff develop -m"Release Feature 1 to test (#2)"
+```
+
+At this stage, the Git commit history looks like this
+
+```
+*   ####### (HEAD -> test) Release Feature 1 to test (#2)
+|\
+| * ####### (develop) Feature 1 (#1)
+|/|
+| * ####### Feature 1
+|/
+* ####### (prod) Initial commit
+```
+
+
+## Continuing Feature Development
+
+To demonstrate that work does not stop while we begin the process of releasing
+to production, we will continue to add new features to the `develop` branch
+before we merge `test` into `prod`.
+
+```
+git checkout -b feature/2 develop
+echo "Feature 2" >> CHANGELOG.md
+git add CHANGELOG.md
+git commit -m"Feature 2"
+git checkout develop
+git merge --no-ff feature/2 -m"Feature 2 (#3)"
+git branch -d feature/2
+```
+
+At this stage, the Git commit history looks like this
+
+```
+*   ####### (HEAD -> develop) Feature 2 (#3)
+|\
+| * ####### Feature 2
+|/
+| *   ####### (test) Release Feature 1 to test (#2)
+| |\
+| |/
+|/|
+* |   ####### Feature 1 (#1)
+|\ \
+| |/
+|/|
+| * ####### Feature 1
+|/
+* ####### (prod) Initial commit
+```
+
+This is already getting quite confusing, and we haven't even released to
+production yet.
+
+
 [1]: https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-request-merges
 [2]: https://docs.microsoft.com/en-au/azure/devops/repos/git/pull-requests?view=azure-devops#complete-the-pull-request
 [3]: https://bitbucket.org/blog/fast-forward-merges-bitbucket-cloud-default-like
