@@ -250,6 +250,93 @@ This is already getting quite confusing, and we haven't even released to
 production yet.
 
 
+## Releasing to Production
+
+For now, we will use the "merge commit" strategy to release new features into
+the production environment.
+
+```
+git checkout prod
+git merge --no-ff test -m"Release Feature 1 to prod (#4)"
+```
+
+At this stage, the Git commit history looks like this
+
+```
+*   ####### (HEAD -> prod) Release Feature 1 to prod (#4)
+|\
+| | *   ####### (develop) Feature 2 (#3)
+| | |\
+| | | * ####### Feature 2
+| | |/
+| * / ####### (test) Release Feature 1 to test (#2)
+|/| |
+| |/
+| * ####### Feature 1 (#1)
+|/|
+| * ####### Feature 1
+|/
+* ####### Initial commit
+```
+
+
+## Feature Development Continues...
+
+As I said, work does not stop at any point, so now we will add another feature
+to `develop` and release previous changes from `develop` into `test` at the
+same time.
+
+```
+git checkout -b feature/3 develop
+echo "Feature 3" >> CHANGELOG.md
+git add CHANGELOG.md
+git commit -m"Feature 3"
+git checkout test
+git merge --no-ff develop -m"Release Feature 2 to test (#6)"
+git checkout develop
+git merge --no-ff feature/3 -m"Feature 3 (#5)"
+git branch -d feature/3
+```
+
+Let's continue with a release of new features into the production environment,
+still using the "merge-commit" strategy.
+
+```
+git checkout prod
+git merge --no-ff test -m"Release Feature 2 to prod (#7)"
+```
+
+At this point, the Git commit history looks like
+
+```
+*   ####### (HEAD -> prod) Release Feature 2 to prod (#7)
+|\
+| | *   ####### (develop) Feature 3 (#5)
+| | |\
+| * | | ####### (test) Release Feature 2 to test (#6)
+| |\| |
+| | | * ####### Feature 3
+| | |/
+* | | ####### Release Feature 1 to prod (#4)
+|\| |
+| | *   ####### Feature 2 (#3)
+| | |\
+| | | * ####### Feature 2
+| | |/
+| * / ####### Release Feature 1 to test (#2)
+|/| |
+| |/
+| * ####### Feature 1 (#1)
+|/|
+| * ####### Feature 1
+|/
+* ####### Initial commit
+```
+
+This is becoming a nightmare now, and we've only done 3 features and 2
+releases.
+
+
 [1]: https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-request-merges
 [2]: https://docs.microsoft.com/en-au/azure/devops/repos/git/pull-requests?view=azure-devops#complete-the-pull-request
 [3]: https://bitbucket.org/blog/fast-forward-merges-bitbucket-cloud-default-like
