@@ -158,6 +158,35 @@ At this stage, the Git commit history looks like this
 ```
 
 
+## Developing Features
+
+New features will be added through a typical pull request-based workflow. We
+create a feature branch with an auto-incrementing feature ID, starting with
+`feature/1`, and create a single commit. For feature branches, we will always
+use the "merge commit" merge strategy, and we will always delete our feature
+branches once the corresponding pull request has been merged.
+
+```
+git checkout -b feature/1 develop
+echo "Feature 1" >> CHANGELOG.md
+git add CHANGELOG.md
+git commit -m"Feature 1"
+git checkout develop
+git merge --no-ff feature/1 -m"Feature 1 (#1)"
+git branch -d feature/1
+```
+
+At this stage, the Git commit history looks like this
+
+```
+*   ####### (HEAD -> develop) Feature 1 (#1)
+|\
+| * ####### Feature 1
+|/
+* ####### (test, prod) Initial commit
+```
+
+
 [1]: https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-request-merges
 [2]: https://docs.microsoft.com/en-au/azure/devops/repos/git/pull-requests?view=azure-devops#complete-the-pull-request
 [3]: https://bitbucket.org/blog/fast-forward-merges-bitbucket-cloud-default-like
